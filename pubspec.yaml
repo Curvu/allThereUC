@@ -34,6 +34,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^0.13.6
   localstorage: ^4.0.1+2
+  gradient_widgets: ^0.6.0
+  gradients: ^0.1.1+2
+  outline_gradient_button: ^2.0.1+1
+  gradient_borders: ^1.0.0
 
 dev_dependencies:
   flutter_test:
