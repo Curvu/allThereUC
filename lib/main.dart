@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   // try to login with stored email and password
   Future<String> checkCredentials() async {
     final LocalStorage storage = LocalStorage('allThereUC');
+    await storage.ready;
     String? email = await storage.getItem('email');
     String? password = await storage.getItem('password');
     if (email != null && password != null) {
