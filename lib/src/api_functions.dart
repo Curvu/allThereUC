@@ -16,7 +16,7 @@ Future<String> tryLogin(String email, String password) async {
         'Content-Type': 'application/json; charset=UTF-8',
       },
     );
-    return jsonDecode(response.body)['token'] ?? 'a';
+    return jsonDecode(response.body)['token'] ?? '';
   } finally {
     client.close();
   }
