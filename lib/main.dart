@@ -27,11 +27,7 @@ class MyApp extends StatelessWidget {
       future: checkCredentials(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          if (snapshot.data != '') {
-            return Home(token: snapshot.data);
-          } else {
-            return const Login();
-          }
+          return snapshot.data != '' ? Be(token: snapshot.data) : const Login();
         } else {
           return const Scaffold(
             body: Center(
@@ -49,14 +45,10 @@ class MyApp extends StatelessWidget {
       title: 'allThereUC',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white, background: const Color(0xFF1b1b1b)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue, background: const Color(0xFF1b1b1b)),
         useMaterial3: true,
       ),
       home: getPage(),
-      routes: {
-        '/login': (context) => const Login(),
-        '/home': (context) => const Home(),
-      },
     );
   }
 }
