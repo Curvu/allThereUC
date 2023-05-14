@@ -1,20 +1,131 @@
 import 'package:flutter/material.dart';
+import 'package:gradient_borders/gradient_borders.dart';
 import 'package:localstorage/localstorage.dart';
 import 'login.dart';
 import '../api_functions.dart' as api;
 
-class Home extends StatefulWidget {
+class Be extends StatefulWidget {
   final String? token;
-
-  const Home({Key? key, this.token}) : super(key: key);
+  const Be({Key? key, this.token}) : super(key: key);
 
   @override
-  State<Home> createState() => _HomeState();
+  State<Be> createState() => _BeState();
 }
 
-class _HomeState extends State<Home> {
+class _BeState extends State<Be> with SingleTickerProviderStateMixin {
   String? getToken() => widget.token;
-  Color _borderColor = const Color(0xFF1E90FF);
+
+  // gradient border color
+  static List<Gradient> gradients = <Gradient>[
+    LinearGradient(
+      colors: [Colors.lightBlue.shade500, Colors.cyanAccent.shade400],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    LinearGradient(
+      colors: [Colors.green.shade300, Colors.green.shade600],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    LinearGradient(
+      colors: [Colors.red.shade500, Colors.red.shade800],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    const LinearGradient(
+      colors: [Colors.white70, Colors.white],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ];
+
+  static Gradient _borderColor = gradients[0];
+
+  late AnimationController _rotationController;
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
+
+  Future<bool> _sendPresence() async {
+    String? token = getToken();
+    if (token != null) {
+      Map<String, String> current = await api.getAula(token);
+      String session = current['session'] ?? '';
+      String aula = current['aula'] ?? '';
+      if (aula != '' && session != '') {
+        if (!(await api.getPresence(token, aula))) {
+          return !(await api.submitPresence(token, aula, session) == null);
+        }
+      }
+    }
+    return false;
+  }
+
+  Widget presenceButton() {
+    return Listener(
+      onPointerDown: (event) => setState(() => _borderColor = gradients[3]),
+      onPointerUp: (event) => setState(() => _borderColor = gradients[0]),
+      child: FutureBuilder<bool>(
+        future: null, // Initialize the future to null
+        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          // If the future is completed, reset the rotation.
+          if (snapshot.connectionState == ConnectionState.done) _rotationController.reset();
+
+          return Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: GradientBoxBorder(
+                gradient: LinearGradient(
+                  colors: _borderColor.colors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                width: 2
+              ),
+            ),
+            child: ElevatedButton(
+              onPressed: () async {
+                setState(() => _borderColor = gradients[3]);
+                _rotationController.repeat(); // Start the rotation animation.
+                bool result = await _sendPresence();
+                _rotationController.stop(); // Stop the rotation animation.
+
+                // Show a red border if the result is false, otherwise show a green border. (after 1 second the border goes back to blue)
+                setState(() => _borderColor = result ? gradients[1] : gradients[2]);
+                Future.delayed(const Duration(seconds: 1), () => setState(() => _borderColor = gradients[0]));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1b1b1b),
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                shape: const CircleBorder(
+                  eccentricity: 0.0,
+                  side: BorderSide(style: BorderStyle.none, width: 0.0),
+                ),
+                padding: const EdgeInsets.all(75),
+                textStyle: const TextStyle(fontSize: 48, fontFamily: 'Comfortaa'),
+              ),
+              child: RotationTransition(
+                turns: _rotationController,
+                child: const Text('be'),
+              ),
+            )
+          );
+        },
+      ),
+    );
+  }
+
 
   Widget logoutButton() {
     return Container(
@@ -31,57 +142,9 @@ class _HomeState extends State<Home> {
           },
           style: ElevatedButton.styleFrom(
             textStyle: const TextStyle(fontSize: 20, fontFamily: 'Comfortaa'),
-            // padding bottom 10
           ),
           child: const Text('Logout'),
         )
-      )
-    );
-  }
-
-  Widget presenceButton() {
-    return Listener(
-      onPointerDown: (event) => setState(() => _borderColor = const Color(0xFFFFFFFF)),
-      onPointerUp: (event) => setState(() => _borderColor = const Color(0xFF1E90FF)),
-      child: ElevatedButton(
-        onPressed: () async {
-          String? token = getToken();
-          if (token != null) {
-            Map<String, String> current = await api.getAula(token);
-            String session = current['session'] ?? '';
-            String aula = current['aula'] ?? '';
-            if (aula != '' && session != '') {
-              bool presence = await api.getPresence(token, aula);
-              if (!presence) {
-                if (await api.submitPresence(token, aula, session) == null) {
-                  setState(() => _borderColor = const Color(0xFFFF0000));
-                } else {
-                  setState(() => _borderColor = const Color(0xFF00FF00));
-                }
-              } else {
-                setState(() => _borderColor = const Color(0xFFFF0000));
-              }
-            } else {
-              // border color red (0xFFFF0000)
-              setState(() => _borderColor = const Color(0xFFFF0000));
-            }
-            Future.delayed(const Duration(seconds: 1), () => setState(() => _borderColor = const Color(0xFF1E90FF)));
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1b1b1b),
-          foregroundColor: Theme.of(context).colorScheme.onSecondary,
-          shape: CircleBorder(
-            side: BorderSide(
-              color: _borderColor,
-              width: 4.0,
-              style: BorderStyle.solid,
-            ),
-          ),
-          padding: const EdgeInsets.all(100),
-          textStyle: const TextStyle(fontSize: 48, fontFamily: 'Comfortaa'),
-        ),
-        child: const Text('Click'),
       )
     );
   }
@@ -116,9 +179,11 @@ class _HomeState extends State<Home> {
               'Marcar Presença',
               style: TextStyle(fontSize: 30, fontFamily: 'Comfortaa', color: Colors.white),
             ),
-            Expanded(child: Center(
-              child: presenceButton(),
-            )),
+            Expanded(
+              child: Center(
+                child: presenceButton()
+              )
+            ),
             Align(
               alignment: FractionalOffset.bottomCenter,
               child: logoutButton(),
@@ -129,4 +194,7 @@ class _HomeState extends State<Home> {
       
     );
   }
+}
+
+LinearGradientPainter({required colorSpace, required List<Color> colors}) {
 }
