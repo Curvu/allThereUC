@@ -29,7 +29,7 @@ class _LoginState extends State<Login> {
       await storage.setItem('email', emailController.text);
       await storage.setItem('password', passwordController.text);
 
-      if (context.mounted) Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => Home(token: token)));
+      if (context.mounted) Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => Be(token: token)));
     }
   }
 
