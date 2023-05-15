@@ -1,34 +1,20 @@
 import 'package:flutter/material.dart';
 import 'src/Views/login.dart';
 import 'src/Views/be_there_uc.dart';
-import 'src/api_functions.dart' as api;
-import 'package:localstorage/localstorage.dart';
+import 'src/uc_api.dart' as api;
 
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // try to login with stored email and password
-  Future<String> checkCredentials() async {
-    final LocalStorage storage = LocalStorage('allThereUC');
-    await storage.ready;
-    String? email = await storage.getItem('email');
-    String? password = await storage.getItem('password');
-    if (email != null && password != null) {
-      return await api.tryLogin(email, password);
-    } else {
-      return '';
-    }
-  }
-
   // get the correct page to show
   Widget getPage() {
-    return FutureBuilder<String>(
-      future: checkCredentials(),
+    return FutureBuilder<bool>(
+      future: api.refreshToken(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return snapshot.data != '' ? Be(token: snapshot.data) : const Login();
+          return snapshot.data == true ? const Be() : const Login();
         } else {
           return const Scaffold(
             body: Center(
