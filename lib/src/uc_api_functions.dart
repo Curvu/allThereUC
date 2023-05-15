@@ -32,7 +32,7 @@ Future<bool> getPresence(String token, String aula) async {
     final responseData = jsonDecode(response.body);
 
     if (responseData['type'] == null) {
-      return responseData['type'];
+      return false;
     } else {
       return true;
     }
