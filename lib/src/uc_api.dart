@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'storage.dart' as storage;
 
-Future<String> tryLogin(String email, String password) async {
-  var client = http.Client();
+Future<bool> tryLogin(String email, String password) async {
   try {
-    var response = await client.post(
+    var response = await http.post(
       Uri.parse('https://id.fw.uc.pt/v1/login'),
       body: jsonEncode(<String, String>{
         'email': email,
@@ -16,9 +16,32 @@ Future<String> tryLogin(String email, String password) async {
         'Content-Type': 'application/json; charset=UTF-8',
       },
     );
-    return jsonDecode(response.body)['token'] ?? '';
-  } finally {
-    client.close();
+    String token = jsonDecode(response.body)['token'] ?? '';
+    if (token == '') return false;
+    storage.saveTokenUC(token);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+Future<bool> refreshToken() async {
+  final credentials = await storage.getCredentials();
+  return await tryLogin(credentials[0], credentials[1]);
+}
+
+Future<String> getToken() async {
+  final token = await storage.getTokenUC();
+  try {
+    final response = await http.get(
+      Uri.parse('https://id.fw.uc.pt/v1/user'),
+      headers: {'authorization': token},
+    );
+    if(response.statusCode == 200) return token;
+    await refreshToken();
+    return '';
+  } catch (error) {
+    return '';
   }
 }
 
@@ -28,14 +51,7 @@ Future<bool> getPresence(String token, String aula) async {
       Uri.parse('https://academic.fw.uc.pt/v1/student/class/$aula/presence'),
       headers: {'authorization': token},
     );
-
-    final responseData = jsonDecode(response.body);
-
-    if (responseData['type'] == null) {
-      return false;
-    } else {
-      return true;
-    }
+    return jsonDecode(response.body)['type'] == null;
   } catch (error) {
     return true;
   }
@@ -59,7 +75,6 @@ Future<dynamic> submitPresence(String token, String aula, String session) async 
     return false;
   }
 }
-
 
 Future<Map<String, String>> getAula(String token) async {
   try {
