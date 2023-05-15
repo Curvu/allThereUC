@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/gradient_borders.dart';
-import 'package:localstorage/localstorage.dart';
 import 'login.dart';
-import '../api_functions.dart' as api;
+import 'eat_there_uc.dart';
+import '../uc_api.dart' as uc;
+import '../storage.dart' as storage;
 
 class Be extends StatefulWidget {
-  final String? token;
-  const Be({Key? key, this.token}) : super(key: key);
+  const Be({Key? key}) : super(key: key);
 
   @override
   State<Be> createState() => _BeState();
 }
 
 class _BeState extends State<Be> with SingleTickerProviderStateMixin {
-  String? getToken() => widget.token;
-
   // gradient border color
   static List<Gradient> gradients = <Gradient>[
     LinearGradient(
@@ -58,18 +56,14 @@ class _BeState extends State<Be> with SingleTickerProviderStateMixin {
   }
 
   Future<bool> _sendPresence() async {
-    String? token = getToken();
-    if (token != null) {
-      Map<String, String> current = await api.getAula(token);
-      String session = current['session'] ?? '';
-      String aula = current['aula'] ?? '';
-      if (aula != '' && session != '') {
-        if (!(await api.getPresence(token, aula))) {
-          return !(await api.submitPresence(token, aula, session) == null);
-        }
-      }
-    }
-    return false;
+    final token = await uc.getToken(); // check if token is still valid (and return it)
+    if (token == '') return false;
+
+    Map<String, String> current = await uc.getAula(token);
+    String session = current['session'] ?? '';
+    String aula = current['aula'] ?? '';
+    if (aula == '' || session == '' || (await uc.getPresence(token, aula))) return false;
+    return !(await uc.submitPresence(token, aula, session) == null);
   }
 
   Widget presenceButton() {
@@ -135,10 +129,8 @@ class _BeState extends State<Be> with SingleTickerProviderStateMixin {
         height: 50,
         child: TextButton(
           onPressed: () {
-            final LocalStorage storage = LocalStorage('allThereUC');
-            storage.deleteItem('email');
-            storage.deleteItem('password');
-            Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => const Login()));
+            storage.clear();
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Login()));
           },
           style: ElevatedButton.styleFrom(
             textStyle: const TextStyle(fontSize: 20, fontFamily: 'Comfortaa'),
@@ -149,11 +141,11 @@ class _BeState extends State<Be> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget foodButton() {
+  Widget eatButton() {
     return IconButton(
-      icon: const Icon(Icons.school_rounded), // rice_bowl_rounded
+      icon: const Icon(Icons.food_bank_rounded),
       onPressed: () {
-        // change to the food page
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Eat()));
       },
       tooltip: 'Meals',
     );
@@ -166,7 +158,7 @@ class _BeState extends State<Be> with SingleTickerProviderStateMixin {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('beThereUC', style: TextStyle(fontFamily: 'Comfortaa')),
         actions: <Widget>[
-          foodButton(),
+          eatButton(),
         ],
 
       ),
@@ -194,7 +186,4 @@ class _BeState extends State<Be> with SingleTickerProviderStateMixin {
       
     );
   }
-}
-
-LinearGradientPainter({required colorSpace, required List<Color> colors}) {
 }
