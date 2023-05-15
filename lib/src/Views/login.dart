@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:localstorage/localstorage.dart';
-import '../api_functions.dart' as api;
 import 'be_there_uc.dart';
+import '../uc_api.dart' as api;
+import '../storage.dart' as storage;
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -13,7 +13,6 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final LocalStorage storage = LocalStorage('allThereUC');
 
   @override
   void dispose() {
@@ -24,12 +23,10 @@ class _LoginState extends State<Login> {
 
   void _login() async {
     FocusScope.of(context).unfocus();
-    String token = await api.tryLogin(emailController.text, passwordController.text);
-    if (token != '') { // after login go to home page but you can't go back to login page
-      await storage.setItem('email', emailController.text);
-      await storage.setItem('password', passwordController.text);
-
-      if (context.mounted) Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => Be(token: token)));
+    await api.tryLogin(emailController.text, passwordController.text);
+    if (await storage.getTokenUC() != '') { // after login go to home page but you can't go back to login page
+      storage.saveCredentials(emailController.text, passwordController.text);
+      if (context.mounted) Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => const Be()));
     }
   }
 
