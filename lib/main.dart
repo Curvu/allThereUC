@@ -10,11 +10,11 @@ class MyApp extends StatelessWidget {
 
   // get the correct page to show
   Widget getPage() {
-    return FutureBuilder<bool>(
-      future: api.refreshToken(),
+    return FutureBuilder<String>(
+      future: api.getToken(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return snapshot.data == true ? const Be() : const Login();
+          return snapshot.data != '' ? const Be() : const Login();
         } else {
           return const Scaffold(
             body: Center(
