@@ -17,8 +17,9 @@ Future<bool> tryLogin(String email, String password) async {
       },
     );
     String token = jsonDecode(response.body)['token'] ?? '';
+    print('token: $token');
     if (token == '') return false;
-    storage.saveTokenUC(token);
+    await storage.saveTokenUC(token);
     return true;
   } catch (error) {
     return false;

@@ -2,7 +2,7 @@ import 'package:localstorage/localstorage.dart';
 
 final LocalStorage storage = LocalStorage('allThereUC');
 
-void saveCredentials(String email, String password) async {
+Future saveCredentials(String email, String password) async {
   await storage.ready;
   await storage.setItem('email', email);
   await storage.setItem('password', password);
@@ -13,7 +13,7 @@ Future<List<String>> getCredentials() async {
   return [await storage.getItem('email') ?? '', await storage.getItem('password') ?? ''];
 }
 
-void saveTokenUC(String token) async {
+Future saveTokenUC(String token) async {
   await storage.ready;
   await storage.setItem('tokenUC', token);
 }
@@ -33,7 +33,7 @@ Future<String> getTokenSASUC() async {
   return await storage.getItem('tokenSASUC') ?? '';
 }
 
-void clear() async {
+Future clear() async {
   await storage.ready;
   await storage.clear();
 }
