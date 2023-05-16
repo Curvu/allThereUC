@@ -10,7 +10,7 @@ Future<bool> tryLogin(String email, String password) async {
       body: jsonEncode(<String, String>{
         'email': email,
         'password': password,
-        'longLivedToken': 'false',
+        'longLivedToken': 'true',
       }),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
