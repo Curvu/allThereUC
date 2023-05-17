@@ -71,7 +71,7 @@ class _GradientButtonState extends State<GradientButton> with SingleTickerProvid
     return Listener(
       onPointerDown: (event) {
         setState((){
-          if (_borderColor != gradients[0]) _borderColor = gradients[3];
+          if (_borderColor == gradients[0]) _borderColor = gradients[3];
         });
       },
       onPointerUp: (event){

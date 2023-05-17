@@ -38,6 +38,7 @@ dependencies:
   gradients: ^0.1.1+2
   outline_gradient_button: ^2.0.1+1
   gradient_borders: ^1.0.0
+  flutter_local_notifications: ^14.0.0+2
 
 dev_dependencies:
   flutter_test:
@@ -46,8 +47,8 @@ dev_dependencies:
 
   flutter_lints: ^2.0.0
 
-flutter_icons:
-  android: true
+flutter_launcher_icons:
+  android: "launcher_icon"
   image_path: "assets/icon/icon.png"
 
 # For information on the generic Dart part of this file, see the
