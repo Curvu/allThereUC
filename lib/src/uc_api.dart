@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'storage.dart' as storage;
+import 'plugins/notification_service.dart';
 
 Future<bool> tryLogin(String email, String password) async {
   try {
@@ -104,4 +105,17 @@ Future<Map<String, String>> getAula(String token) async {
   } catch (error) {
     return {'aula': '', 'session': ''};
   }
+}
+
+Future<void> _checkPresence() async {
+  final token = await getToken();
+  if (token == '') return;
+  print('token: $token');
+
+  Map<String, String> current = await getAula(token);
+  String session = current['session'] ?? '';
+  String aula = current['aula'] ?? '';
+  if (aula == '' || session == '' || !(await getPresence(token, aula))) return;
+  
+  await NotificationService().notify('beThereUC', 'Não se esqueça de marcar presença!');
 }

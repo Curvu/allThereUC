@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'src/Views/login.dart';
 import 'src/Views/be_there_uc.dart';
 import 'src/uc_api.dart' as api;
+import 'src/plugins/notification_service.dart';
 
-void main() => runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().init();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
